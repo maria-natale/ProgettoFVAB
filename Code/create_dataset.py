@@ -42,11 +42,24 @@ def create_train_test():
   for train_index, test_index in split.split(df, df['lan_gen_age']):
     strat_train_set = df.loc[train_index]
     strat_test_set = df.loc[test_index]
-  strat_test_set = strat_test_set['video_name']
-  strat_train_set = strat_train_set[['video_name','language']] #il train set contiene nome del video e corrispondente tag della lingua
-  strat_train_set['language'] = strat_train_set['language'].map(LANGUAGES) #trasforma il numero della lingua nella stringa corrispondente
-  strat_train_set.to_csv(filename+'_train.csv',index = False)
-  strat_test_set.to_csv(filename+'_test.csv',index = False)
+  strat_train_set_all = pd.DataFrame(columns = ['video_name', 'language'])
+  os.chdir(os.path.join(path_drive, dataset_dir))
+  for i, row in strat_train_set.iterrows(): 
+    video_name = row['video_name']
+    language = row['language']
+    for videoFile in glob.glob(video_name+'*'): #trova tutti i video che iniziano con video_name
+      strat_train_set_all.loc[-1] = [videoFile, language]
+      strat_train_set_all.index += 1
+  strat_test_set_all = pd.DataFrame(columns = ['video_name'])
+  for i, row in strat_test_set.iterrows():
+    video_name = row['video_name']
+    for videoFile in glob.glob(video_name+'*'): #trova tutti i video che iniziano con video_name
+      strat_test_set_all.loc[-1] = [videoFile]
+      strat_test_set_all.index += 1  
+  strat_train_set_all['language'] = strat_train_set_all['language'].map(LANGUAGES) #trasforma il numero della lingua nella stringa corrispondente
+  os.chdir(os.path.join(path_git, 'file_dataset'))
+  strat_train_set_all.to_csv(filename+'_train.csv',index = False)
+  strat_test_set_all.to_csv(filename+'_test.csv',index = False)
 
 
 #salva i frame per i video di training nella cartella train
@@ -57,22 +70,21 @@ def save_frames_train():
     os.makedirs('train')
     for i in tqdm(range(train.shape[0])):
       video_name = train['video_name'][i]
-      for videoFile in glob.glob(video_name+'*'): #cerco tutti i video il cui nome inizia per video_name
-        count = 0
-        cap = cv2.VideoCapture(videoFile)   #prende il video dal path
-        frameRate = cap.get(5) #frame rate
-        x=1
-        while(cap.isOpened()):
-          frameId = cap.get(1) #prende il frame corrente
-          ret, frame = cap.read()
-          if (ret != True):
-            break
-          if (frameId % math.floor(frameRate) == 0):
-            #salva i frame nella cartella train
-            file_tosave ='train/' + videoFile+"_frame%d.jpg" % count
-            count += 1 
-            cv2.imwrite(file_tosave, frame)
-        cap.release()
+      count = 0
+      cap = cv2.VideoCapture(video_name)   #prende il video dal path
+      frameRate = cap.get(5) #frame rate
+      x=1
+      while(cap.isOpened()):
+        frameId = cap.get(1) #prende il frame corrente
+        ret, frame = cap.read()
+        if (ret != True):
+          break
+        #if (frameId % math.floor(frameRate) == 0):
+          #salva i frame nella cartella train
+        file_tosave ='train/' + video_name+"_frame%d.jpg" % count            
+        count += 1 
+        cv2.imwrite(file_tosave, frame)
+      cap.release()
 
 
 if __name__ == '__main__':
