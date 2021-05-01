@@ -3,13 +3,21 @@ import glob
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder
+from tqdm import tqdm
+import re
+import cv2 
+import math 
 
 path_git = '/content/ProgettoFVAB'
-filename = 'spagnolo_giapponese.csv'
+filename = 'spagnolo_giapponese'
 path_drive = '/content/drive/MyDrive/Casillo&Natale'
 dataset_dir = 'dataset_Spagnolo_giapponese'
 
+LANGUAGES = {4:'Spagnolo',
+  7: 'Giapponese'}
 
+
+#crea un file csv contenente i nomi di tutti i video (escludendo le ripetizioni per i video da cui sono state estratte più sequenze)
 def create_csv_file(path):
   os.chdir(os.path.join(path_drive, dataset_dir))
   columns = ['video_name', 'language', 'gender', 'over30', 'lan_gen_age']
@@ -20,33 +28,60 @@ def create_csv_file(path):
     new_name = items[0]+'_'+items[1]+'_'+items[2]+'_'+items[3]+'_'+items[4]
     df.loc[-1] = [new_name, items[0], items[1], items[2], items[0]+'_'+items[1]+'_'+items[2]]
     df.index += 1
-  df = df.sort_index()
   df.drop_duplicates()
-  df.to_csv(os.path.join(path_git, path))
+  df.to_csv(os.path.join(path_git, path), index = False)
 
 
+#crea due file csv, uno contenente i nomi dei video di train e i rispettivi tag e un altro contenente i nomi dei video di test
 def create_train_test():
   os.chdir(os.path.join(path_git, 'file_dataset'))
-  df = pd.read_csv(filename)
+  df = pd.read_csv(filename+'.csv')
   split = StratifiedShuffleSplit(n_splits = 1, test_size = 0.2, random_state = 42) 
   labelencoder = LabelEncoder()
   df['lan_gen_age'] = labelencoder.fit_transform(df['lan_gen_age'])
-  print(df)
   for train_index, test_index in split.split(df, df['lan_gen_age']):
     strat_train_set = df.loc[train_index]
     strat_test_set = df.loc[test_index]
-  strat_test_set = strat_test_set["video_name"]
-  strat_train_set = strat_train_set["video_name"]
-  strat_train_set.to_csv('spagnolo_giapponese_train.csv')
-  strat_test_set.to_csv('spagnolo_giapponese_test.csv')
+  strat_test_set = strat_test_set['video_name']
+  strat_train_set = strat_train_set[['video_name','language']] #il train set contiene nome del video e corrispondente tag della lingua
+  strat_train_set['language'] = strat_train_set['language'].map(LANGUAGES) #trasforma il numero della lingua nella stringa corrispondente
+  strat_train_set.to_csv(filename+'_train.csv',index = False)
+  strat_test_set.to_csv(filename+'_test.csv',index = False)
+
+
+#salva i frame per i video di training nella cartella train
+def save_frames_train():
+  train = pd.read_csv(filename+'_train.csv')
+  os.chdir(os.path.join(path_drive, dataset_dir))
+  if not os.path.isdir('train'):
+    os.makedirs('train')
+    for i in tqdm(range(train.shape[0])):
+      video_name = train['video_name'][i]
+      for videoFile in glob.glob(video_name+'*'): #cerco tutti i video il cui nome inizia per video_name
+        count = 0
+        cap = cv2.VideoCapture(videoFile)   #prende il video dal path
+        frameRate = cap.get(5) #frame rate
+        x=1
+        while(cap.isOpened()):
+          frameId = cap.get(1) #prende il frame corrente
+          ret, frame = cap.read()
+          if (ret != True):
+            break
+          if (frameId % math.floor(frameRate) == 0):
+            #salva i frame nella cartella train
+            file_tosave ='train/' + videoFile+"_frame%d.jpg" % count
+            count += 1 
+            cv2.imwrite(file_tosave, frame)
+        cap.release()
 
 
 if __name__ == '__main__':
   os.chdir(path_git)
-  print(os.path.join('file_dataset', filename))
-  if not os.path.exists(os.path.join('file_dataset', filename)):
-    create_csv_file(os.path.join('file_dataset', filename))
+  print(os.path.join('file_dataset', filename+'.csv'))
+  if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
+    create_csv_file(os.path.join('file_dataset', filename+'.csv'))
   create_train_test()
+  save_frames_train()
    
   
   
