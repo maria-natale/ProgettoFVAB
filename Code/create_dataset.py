@@ -113,8 +113,8 @@ if __name__ == '__main__':
   print(os.path.join('file_dataset', filename+'.csv'))
   if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
     create_csv_file(os.path.join('file_dataset', filename+'.csv'))
-  #create_train_test()
-  #save_frames_train()
+  create_train_test()
+  save_frames_train()
   etichetta_immagine()
    
   
