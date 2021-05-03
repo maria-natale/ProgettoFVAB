@@ -89,7 +89,7 @@ def save_frames_train():
 #csv image, imagini con etichetta
 def etichetta_immagine():
   print("dentro")
-  images = glob("/content/drive/MyDrive/Casillo&Natale/dataset_Spagnolo_giapponese/train/*.jpg")
+  images = glob(os.path.join(path_drive, dataset_dir+"/train/*.jpg")
 
   train_image = []
   train_class = []
@@ -106,7 +106,7 @@ def etichetta_immagine():
   train_data['lingua'] = train_class
 
 # dataframe in csv
-  train_data.to_csv('/content/ProgettoFVAB/file_dataset/spagnolo_giapponeseImmaginiClasse.csv',header=True, index=False)
+  train_data.to_csv(os.path.join(path_git, 'file_dataset', filename+'ImmaginiClasse.csv'),header=True, index=False)
 
 if __name__ == '__main__':
   os.chdir(path_git)
