@@ -1,5 +1,5 @@
 import os
-import glob
+from glob import glob
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder
@@ -86,14 +86,36 @@ def save_frames_train():
         cv2.imwrite(file_tosave, frame)
       cap.release()
 
+#csv image, imagini con etichetta
+def etichetta_immagine():
+  print("dentro")
+  images = glob("/content/drive/MyDrive/Casillo&Natale/dataset_Spagnolo_giapponese/train/*.jpg")
+
+  train_image = []
+  train_class = []
+  print("ciclo")
+  for i in tqdm(range(len(images))):
+    # nome immagini
+    train_image.append(images[i].split('/')[7])
+    # classe immagini 
+    train_class.append(LANGUAGES[int(images[i].split('/')[7].split('_')[0])])
+  print("uscito dal ciclo")
+# immagini e classe in df
+  train_data = pd.DataFrame()
+  train_data['frame'] = train_image
+  train_data['lingua'] = train_class
+
+# dataframe in csv
+  train_data.to_csv('/content/ProgettoFVAB/file_dataset/spagnolo_giapponeseImmaginiClasse.csv',header=True, index=False)
 
 if __name__ == '__main__':
   os.chdir(path_git)
   print(os.path.join('file_dataset', filename+'.csv'))
   if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
     create_csv_file(os.path.join('file_dataset', filename+'.csv'))
-  create_train_test()
-  save_frames_train()
+  #create_train_test()
+  #save_frames_train()
+  etichetta_immagine()
    
   
   
