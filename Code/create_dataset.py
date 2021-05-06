@@ -28,8 +28,14 @@ def create_csv_file(path):
     new_name = items[0]+'_'+items[1]+'_'+items[2]+'_'+items[3]+'_'+items[4]
     df.loc[-1] = [new_name, items[0], items[1], items[2], items[0]+'_'+items[1]+'_'+items[2]]
     df.index += 1
-  df.drop_duplicates(subset = ['video_name'])
+  duplicateRowsDF = df[df.duplicated(['video_name'])]
+  print(duplicateRowsDF)
+  print(len(df))  
+  df=df.drop_duplicates(subset=['video_name'])
   df.sort_values(by = ['video_name'], ascending = True)
+  duplicateRowsDF = df[df.duplicated(['video_name'])]
+  print(df)
+  print(len(df))
   df.to_csv(os.path.join(path_git, path), index = False)
 
 
@@ -117,8 +123,8 @@ if __name__ == '__main__':
   #if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
   create_csv_file(os.path.join('file_dataset', filename+'.csv'))
   create_train_test()
-  #save_frames_train()
-  #etichetta_immagine()
+  save_frames_train()
+  etichetta_immagine()
    
   
   
