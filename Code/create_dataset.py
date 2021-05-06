@@ -22,13 +22,14 @@ def create_csv_file(path):
   os.chdir(os.path.join(path_drive, dataset_dir))
   columns = ['video_name', 'language', 'gender', 'over30', 'lan_gen_age']
   df = pd.DataFrame(columns=columns)
-  for video in glob.glob('*.avi'): #per ogni video nella directory crea un'entry nel file csv
+  for video in glob('*.avi'): #per ogni video nella directory crea un'entry nel file csv
     video_name = os.path.basename(video)
     items = video_name.split('_')
     new_name = items[0]+'_'+items[1]+'_'+items[2]+'_'+items[3]+'_'+items[4]
     df.loc[-1] = [new_name, items[0], items[1], items[2], items[0]+'_'+items[1]+'_'+items[2]]
     df.index += 1
-  df.drop_duplicates()
+  df.drop_duplicates(subset = ['video_name'])
+  df.sort_values(by = ['video_name'], ascending = True)
   df.to_csv(os.path.join(path_git, path), index = False)
 
 
@@ -47,17 +48,19 @@ def create_train_test():
   for i, row in strat_train_set.iterrows(): 
     video_name = row['video_name']
     language = row['language']
-    for videoFile in glob.glob(video_name+'*'): #trova tutti i video che iniziano con video_name
+    for videoFile in glob(video_name+'*'): #trova tutti i video che iniziano con video_name
       strat_train_set_all.loc[-1] = [videoFile, language]
       strat_train_set_all.index += 1
   strat_test_set_all = pd.DataFrame(columns = ['video_name'])
   for i, row in strat_test_set.iterrows():
     video_name = row['video_name']
-    for videoFile in glob.glob(video_name+'*'): #trova tutti i video che iniziano con video_name
+    for videoFile in glob(video_name+'*'): #trova tutti i video che iniziano con video_name
       strat_test_set_all.loc[-1] = [videoFile]
       strat_test_set_all.index += 1  
   strat_train_set_all['language'] = strat_train_set_all['language'].map(LANGUAGES) #trasforma il numero della lingua nella stringa corrispondente
   os.chdir(os.path.join(path_git, 'file_dataset'))
+  strat_test_set.sort_values(by = ['video_name'], ascending = True)
+  strat_train_set.sort_values(by = ['video_name'], ascending = True)
   strat_train_set_all.to_csv(filename+'_train.csv',index = False)
   strat_test_set_all.to_csv(filename+'_test.csv',index = False)
 
@@ -86,11 +89,11 @@ def save_frames_train():
         cv2.imwrite(file_tosave, frame)
       cap.release()
 
+
 #csv image, imagini con etichetta
 def etichetta_immagine():
   print("dentro")
-  images = glob(os.path.join(path_drive, dataset_dir+"/train/*.jpg")
-
+  images = glob(os.path.join(path_drive, dataset_dir+"/train/*.jpg"))
   train_image = []
   train_class = []
   print("ciclo")
@@ -111,11 +114,11 @@ def etichetta_immagine():
 if __name__ == '__main__':
   os.chdir(path_git)
   print(os.path.join('file_dataset', filename+'.csv'))
-  if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
-    create_csv_file(os.path.join('file_dataset', filename+'.csv'))
+  #if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
+  create_csv_file(os.path.join('file_dataset', filename+'.csv'))
   create_train_test()
-  save_frames_train()
-  etichetta_immagine()
+  #save_frames_train()
+  #etichetta_immagine()
    
   
   
