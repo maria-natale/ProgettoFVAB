@@ -45,6 +45,60 @@ def create_folders():
     test.to_csv(filename+'_test_csv.csv', index = False)
 
 
+#unisce tutti i file csv in due file train e test
+def file_union():
+  os.chdir(os.path.join(path_drive, dataset_dir, 'train_csv'))
+  df_train = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
+  #df_test = []
+  os.chdir(os.path.join(path_drive, dataset_dir, 'test_csv'))
+  #for file in tqdm(glob.glob("*.csv")):
+  #  df_test.append(pd.read_csv(file))  
+  df_test = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
+  os.chdir(os.path.join(path_git, 'file_dataset', 'csv'))
+  df_train.to_csv(filename+"_all_train.csv", index = False)
+  df_test.to_csv(filename+"_all_test.csv", index = False)
+
+#per ogni riga dei file di train e di test crea un'etichetta target in due file 
+def create_targets_file():
+  os.chdir(os.path.join(path_drive, dataset_dir, 'train_csv'))
+  if not os.path.isdir('labels'):
+    os.makedirs('labels')
+  train_targets = pd.DataFrame(columns = ['language'])
+  for file in tqdm(glob.glob("*.csv")):
+    df = pd.read_csv(file)
+    for row in df.iterrows():
+        train_targets.loc[-1] = [file.split('_')[0]]
+        train_targets.index += 1
+  train_targets['language'] = train_targets['language'].map(LANGUAGES)
+  
+  os.chdir(os.path.join(path_drive, dataset_dir, 'test_csv'))
+  if not os.path.isdir('labels'):
+    os.makedirs('labels')
+  test_targets = pd.DataFrame(columns = ['language'])
+  for file in tqdm(glob.glob("*.csv")):
+    df = pd.read_csv(file)
+    for row in df.iterrows():
+        test_targets.loc[-1] = [file.split('_')[0]]
+        test_targets.index += 1
+  train_targets['language'] = train_targets['language'].map(LANGUAGES)
+  os.chdir(os.path.join(path_git, 'file_dataset', 'csv'))
+  train_targets.to_csv(filename+"targets_all_train.csv", index = False)
+  test_targets.to_csv(filename+"targets_all_test.csv", index = False)
+      
+
+
+
+if __name__ == '__main__':
+  #create_folders()
+  #file_union()
+  create_targets_file()
+    os.chdir(os.path.join(path_git, 'file_dataset/file_csv'))
+    train_label.sort_values(by = ['video_name'], ascending = True)
+    train_label.to_csv(filename+'_train_csv.csv', index = False)
+    test.sort_values(by = ['video_name'], ascending = True)
+    test.to_csv(filename+'_test_csv.csv', index = False)
+
+
 if __name__ == '__main__':
   create_folders()
 
