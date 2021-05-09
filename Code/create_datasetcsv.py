@@ -90,13 +90,8 @@ def create_targets_file():
 
 if __name__ == '__main__':
   #create_folders()
-  #file_union()
+  file_union()
   create_targets_file()
-    os.chdir(os.path.join(path_git, 'file_dataset/file_csv'))
-    train_label.sort_values(by = ['video_name'], ascending = True)
-    train_label.to_csv(filename+'_train_csv.csv', index = False)
-    test.sort_values(by = ['video_name'], ascending = True)
-    test.to_csv(filename+'_test_csv.csv', index = False)
 
 
 if __name__ == '__main__':
