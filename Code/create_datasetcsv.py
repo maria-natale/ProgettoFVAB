@@ -25,8 +25,9 @@ def create_folders():
     os.makedirs('test_csv')
     train_label = pd.DataFrame(columns = ['video_name', 'language'])
     test = pd.DataFrame(columns = ['video_name'])
-    for filecsv in glob.glob("*.csv"):
+    for filecsv in tqdm(glob.glob("*.csv")):
       name_to_search = filecsv.split('.')[0]+ '.avi'
+      
       df = pd.read_csv(filecsv)
       if any(train.video_name == name_to_search):
         df.to_csv('train_csv/'+filecsv, index = False)
@@ -66,9 +67,14 @@ def create_targets_file():
   train_targets = pd.DataFrame(columns = ['language'])
   for file in tqdm(glob.glob("*.csv")):
     df = pd.read_csv(file)
+    i=0
     for row in df.iterrows():
+        i+1
         train_targets.loc[-1] = [file.split('_')[0]]
         train_targets.index += 1
+        if i==360:
+          break
+
   train_targets['language'] = train_targets['language'].map(LANGUAGES)
   
   os.chdir(os.path.join(path_drive, dataset_dir, 'test_csv'))
@@ -89,12 +95,11 @@ def create_targets_file():
 
 
 if __name__ == '__main__':
-  #create_folders()
+  create_folders()
   file_union()
   create_targets_file()
 
 
-if __name__ == '__main__':
-  create_folders()
+
 
 
