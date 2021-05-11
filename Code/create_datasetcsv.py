@@ -29,6 +29,7 @@ def create_folders():
       name_to_search = filecsv.split('.')[0]+ '.avi'
       
       df = pd.read_csv(filecsv)
+      df = df.loc[:360,:]
       if any(train.video_name == name_to_search):
         df.to_csv('train_csv/'+filecsv, index = False)
         train_label.loc[-1] = [filecsv, filecsv.split('_')[0]]
@@ -67,13 +68,12 @@ def create_targets_file():
   train_targets = pd.DataFrame(columns = ['language'])
   for file in tqdm(glob.glob("*.csv")):
     df = pd.read_csv(file)
-    i=0
+    
     for row in df.iterrows():
-        i+1
+      
         train_targets.loc[-1] = [file.split('_')[0]]
         train_targets.index += 1
-        if i==360:
-          break
+        
 
   train_targets['language'] = train_targets['language'].map(LANGUAGES)
   
