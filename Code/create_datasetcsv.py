@@ -29,11 +29,7 @@ def create_folders():
       name_to_search = filecsv.split('.')[0]+ '.avi'
       
       df = pd.read_csv(filecsv)
-<<<<<<< HEAD
       df = df.iloc[:360, :28]
-=======
-      df = df.loc[:360,:]
->>>>>>> refs/remotes/origin/main
       if any(train.video_name == name_to_search):
         df.to_csv('train_csv/'+filecsv, index = False)
         train_label.loc[-1] = [filecsv, filecsv.split('_')[0]]
@@ -55,8 +51,6 @@ def create_folders():
 #unisce tutti i file csv in due file train e test
 def file_union():
   os.chdir(os.path.join(path_drive, dataset_dir, 'train_csv'))
-<<<<<<< HEAD
-  #df_train = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
   columns_66 = [str(i) for i in range(28)]
   df_train = pd.DataFrame(columns = columns_66)
   for fl in tqdm(glob.glob("*.csv")):
@@ -79,7 +73,6 @@ def file_union():
       pass
   print(df_test.shape)
   os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
-=======
   i=0
   for fl in glob.glob("*.csv"):
     if i == 0:
@@ -102,7 +95,6 @@ def file_union():
       df_test.append(pd.read_csv(fl))
   #df_test = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
   os.chdir(os.path.join(path_git, 'file_dataset', 'csv'))
->>>>>>> refs/remotes/origin/main
   df_train.to_csv(filename+"_all_train.csv", index = False)
   df_test.to_csv(filename+"_all_test.csv", index = False)
 
@@ -119,14 +111,10 @@ def create_targets_file():
       
         train_targets.loc[-1] = [file.split('_')[0]]
         train_targets.index += 1
-<<<<<<< HEAD
 
   #train_targets['language'] = train_targets['language'].map(LANGUAGES)
-=======
-        
-
   train_targets['language'] = train_targets['language'].map(LANGUAGES)
->>>>>>> refs/remotes/origin/main
+
   
   os.chdir(os.path.join(path_drive, dataset_dir, 'test_csv'))
   #if not os.path.isdir('labels'):
