@@ -8,17 +8,19 @@ import re
 import cv2 
 
 path_git = '/content/ProgettoFVAB'
-filename = 'spagnolo_giapponese'
+filename_git = 'spagnolo_giapponese'
+filename_dr = '4_7'
 path_drive = '/content/drive/MyDrive/Casillo&Natale'
-dataset_dir = 'dataset_Spagnolo_giapponese/datasetCSV'
+dataset_dir = 'dataset_4_7/datasetCSV'
 
 LANGUAGES = {4:'Spagnolo',
   7: 'Giapponese'}
 
-
+#crea due file, uno con tutti i nomi dei csv di train e le etichette dei csv di test
+#copia i file csv in due cartelle separate train e test e normalizza tutto a 360 righe
 def create_folders():
   os.chdir(os.path.join(path_git, 'file_dataset'))
-  train = pd.read_csv(filename+'_train.csv')
+  train = pd.read_csv(filename_git+'_train.csv')
   os.chdir(os.path.join(path_drive, dataset_dir))
   if not os.path.isdir('train_csv'):
     os.makedirs('train_csv')
@@ -27,9 +29,8 @@ def create_folders():
     test = pd.DataFrame(columns = ['video_name'])
     for filecsv in tqdm(glob.glob("*.csv")):
       name_to_search = filecsv.split('.')[0]+ '.avi'
-      
       df = pd.read_csv(filecsv)
-      df = df.iloc[:360, :28]
+      df = df.iloc[:360, :]
       if any(train.video_name == name_to_search):
         df.to_csv('train_csv/'+filecsv, index = False)
         train_label.loc[-1] = [filecsv, filecsv.split('_')[0]]
@@ -39,11 +40,11 @@ def create_folders():
         test.loc[-1] = [filecsv]
         test.index += 1
 
+
     train_label['language'] = train_label['language'].map(LANGUAGES)
-    #os.chdir(os.path.join(path_git, 'file_dataset/file_csv'))
-    os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
+    os.chdir(os.path.join(path_git, 'file_dataset/file_csv'))
     train_label.sort_values(by = ['video_name'], ascending = True)
-    train_label.to_csv(filename+'_train_csv.csv', index = False)
+    train_label.to_csv(filename_git+'_train_csv.csv', index = False)
     test.sort_values(by = ['video_name'], ascending = True)
     test.to_csv(filename+'_test_csv.csv', index = False)
 
@@ -51,8 +52,7 @@ def create_folders():
 #unisce tutti i file csv in due file train e test
 def file_union():
   os.chdir(os.path.join(path_drive, dataset_dir, 'train_csv'))
-  #df_train = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
-  columns_66 = [str(i) for i in range(28)]
+  columns_66 = [str(i) for i in range(66)]
   df_train = pd.DataFrame(columns = columns_66)
   for fl in tqdm(glob.glob("*.csv")):
     df = pd.read_csv(fl)
@@ -60,7 +60,7 @@ def file_union():
       df = df.set_axis(columns_66, axis = 1)
       df_train = df_train.append(df)
     except:
-      pass
+      print("passato")
   print(df_train.shape)
 
   os.chdir(os.path.join(path_drive, dataset_dir, 'test_csv'))
@@ -71,11 +71,11 @@ def file_union():
       df = df.set_axis(columns_66, axis = 1)
       df_test = df_test.append(df)
     except:
-      pass
+      print("passato")
   print(df_test.shape)
   os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
-  df_train.to_csv(filename+"_all_train.csv", index = False)
-  df_test.to_csv(filename+"_all_test.csv", index = False)
+  df_train.to_csv(filename_dr+"_all_train.csv", index = False)
+  df_test.to_csv(filename_dr+"_all_test.csv", index = False)
 
 #per ogni riga dei file di train e di test crea un'etichetta target in due file 
 def create_targets_file():
@@ -103,8 +103,8 @@ def create_targets_file():
   #test_targets['language'] = test_targets['language'].map(LANGUAGES)
   #os.chdir(os.path.join(path_git, 'file_dataset', 'csv'))
   os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
-  train_targets.to_csv(filename+"targets_all_train.csv", index = False)
-  test_targets.to_csv(filename+"targets_all_test.csv", index = False)
+  train_targets.to_csv(filename_dr+"targets_all_train.csv", index = False)
+  test_targets.to_csv(filename_dr+"targets_all_test.csv", index = False)
       
 
 
