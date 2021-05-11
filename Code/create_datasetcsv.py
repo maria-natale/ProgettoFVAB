@@ -50,12 +50,27 @@ def create_folders():
 #unisce tutti i file csv in due file train e test
 def file_union():
   os.chdir(os.path.join(path_drive, dataset_dir, 'train_csv'))
-  df_train = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
+  i=0
+  for fl in glob.glob("*.csv"):
+    if i == 0:
+      df_train=pd.read_csv(fl)
+      i+1
+    else:
+      df_train.append(pd.read_csv(fl))
+  
+  #df_train = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
   #df_test = []
   os.chdir(os.path.join(path_drive, dataset_dir, 'test_csv'))
   #for file in tqdm(glob.glob("*.csv")):
-  #  df_test.append(pd.read_csv(file))  
-  df_test = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
+  #  df_test.append(pd.read_csv(file))
+  i=0
+  for fl in glob.glob("*.csv"):
+    if i == 0:
+      df_test=pd.read_csv(fl)
+      i+1
+    else:
+      df_test.append(pd.read_csv(fl))
+  #df_test = pd.concat(pd.read_csv(fl) for fl in glob.glob("*.csv"))
   os.chdir(os.path.join(path_git, 'file_dataset', 'csv'))
   df_train.to_csv(filename+"_all_train.csv", index = False)
   df_test.to_csv(filename+"_all_test.csv", index = False)
