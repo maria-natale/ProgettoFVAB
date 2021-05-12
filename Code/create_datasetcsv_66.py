@@ -42,11 +42,11 @@ def create_folders():
 
 
     train_label['language'] = train_label['language'].map(LANGUAGES)
-    os.chdir(os.path.join(path_git, 'file_dataset/file_csv'))
+    os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
     train_label.sort_values(by = ['video_name'], ascending = True)
-    train_label.to_csv(filename_git+'_train_csv.csv', index = False)
+    train_label.to_csv(filename_dr+'_train_csv.csv', index = False)
     test.sort_values(by = ['video_name'], ascending = True)
-    test.to_csv(filename+'_test_csv.csv', index = False)
+    test.to_csv(filename_dr+'_test_csv.csv', index = False)
 
 
 #unisce tutti i file csv in due file train e test
@@ -111,8 +111,8 @@ def create_targets_file():
 
 if __name__ == '__main__':
   create_folders()
-  file_union()
-  create_targets_file()
+  #file_union()
+  #create_targets_file()
 
 
 
