@@ -73,7 +73,7 @@ def create_train_test():
 
 #salva i frame per i video di training nella cartella train
 def save_frames_train_test():
-  os.chdir(os.path.join(path_git, 'file_dataset'))
+  """os.chdir(os.path.join(path_git, 'file_dataset'))
   train = pd.read_csv(filename+'_train.csv')
   os.chdir(os.path.join(path_drive, dataset_dir))
   if not os.path.isdir('train'):
@@ -92,7 +92,7 @@ def save_frames_train_test():
         file_tosave ='train/' + video_name+"_frame%d.jpg" % count            
         count += 1 
         cv2.imwrite(file_tosave, frame)
-      cap.release()
+      cap.release()"""
 
   os.chdir(os.path.join(path_git, 'file_dataset'))
   test = pd.read_csv(filename+'_test.csv')
@@ -118,6 +118,7 @@ def save_frames_train_test():
 
 #csv image, imagini con etichetta
 def etichetta_immagine():
+  print("djs")
   images = glob(os.path.join(path_drive, dataset_dir+"/train/*.jpg"))
   train_image = []
   train_class = []
@@ -125,7 +126,7 @@ def etichetta_immagine():
     # nome immagini
     train_image.append(images[i].split('/')[7])
     # classe immagini 
-    train_class.append(LANGUAGES[int(images[i].split('/')[7].split('_')[0])])
+    train_class.append(images[i].split('/')[7].split('_')[0])
 # immagini e classe in df
   train_data = pd.DataFrame()
   train_data['frame'] = train_image
@@ -138,7 +139,7 @@ def etichetta_immagine():
     # nome immagini
     test_image.append(images[i].split('/')[7])
     # classe immagini 
-    test_class.append(LANGUAGES[int(images[i].split('/')[7].split('_')[0])])
+    test_class.append(images[i].split('/')[7].split('_')[0])
 # immagini e classe in df
   test_data = pd.DataFrame()
   test_data['frame'] = test_image
@@ -156,7 +157,7 @@ if __name__ == '__main__':
   #create_csv_file(os.path.join('file_dataset', filename+'.csv'))
   #create_train_test()
   save_frames_train_test()
-  #etichetta_immagine()
+  etichetta_immagine()
    
   
   
