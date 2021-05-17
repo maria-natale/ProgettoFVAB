@@ -72,7 +72,8 @@ def create_train_test():
 
 
 #salva i frame per i video di training nella cartella train
-def save_frames_train():
+def save_frames_train_test():
+  os.chdir(os.path.join(path_git, 'file_dataset'))
   train = pd.read_csv(filename+'_train.csv')
   os.chdir(os.path.join(path_drive, dataset_dir))
   if not os.path.isdir('train'):
@@ -88,9 +89,28 @@ def save_frames_train():
         ret, frame = cap.read()
         if (ret != True):
           break
-        #if (frameId % math.floor(frameRate) == 0):
-          #salva i frame nella cartella train
         file_tosave ='train/' + video_name+"_frame%d.jpg" % count            
+        count += 1 
+        cv2.imwrite(file_tosave, frame)
+      cap.release()
+
+  os.chdir(os.path.join(path_git, 'file_dataset'))
+  test = pd.read_csv(filename+'_test.csv')
+  os.chdir(os.path.join(path_drive, dataset_dir))
+  if not os.path.isdir('test'):
+    os.makedirs('test')
+    for i in tqdm(range(test.shape[0])):
+      video_name = test['video_name'][i]
+      count = 0
+      cap = cv2.VideoCapture(video_name)   #prende il video dal path
+      frameRate = cap.get(5) #frame rate
+      x=1
+      while(cap.isOpened()):
+        frameId = cap.get(1) #prende il frame corrente
+        ret, frame = cap.read()
+        if (ret != True):
+          break
+        file_tosave ='test/' + video_name+"_frame%d.jpg" % count            
         count += 1 
         cv2.imwrite(file_tosave, frame)
       cap.release()
@@ -98,33 +118,45 @@ def save_frames_train():
 
 #csv image, imagini con etichetta
 def etichetta_immagine():
-  print("dentro")
   images = glob(os.path.join(path_drive, dataset_dir+"/train/*.jpg"))
   train_image = []
   train_class = []
-  print("ciclo")
   for i in tqdm(range(len(images))):
     # nome immagini
     train_image.append(images[i].split('/')[7])
     # classe immagini 
     train_class.append(LANGUAGES[int(images[i].split('/')[7].split('_')[0])])
-  print("uscito dal ciclo")
 # immagini e classe in df
   train_data = pd.DataFrame()
   train_data['frame'] = train_image
-  train_data['lingua'] = train_class
+  train_data['language'] = train_class
+
+  images = glob(os.path.join(path_drive, dataset_dir+"/test/*.jpg"))
+  test_image = []
+  test_class = []
+  for i in tqdm(range(len(images))):
+    # nome immagini
+    test_image.append(images[i].split('/')[7])
+    # classe immagini 
+    test_class.append(LANGUAGES[int(images[i].split('/')[7].split('_')[0])])
+# immagini e classe in df
+  test_data = pd.DataFrame()
+  test_data['frame'] = test_image
+  test_data['language'] = test_class
 
 # dataframe in csv
-  train_data.to_csv(os.path.join(path_git, 'file_dataset', filename+'ImmaginiClasse.csv'),header=True, index=False)
+  train_data.to_csv(os.path.join(path_drive, dataset_dir, 'etichette', filename+'ImmaginiClasse_train.csv'),header=True, index=False)
+  test_data.to_csv(os.path.join(path_drive, dataset_dir, 'etichette', filename+'ImmaginiClasse_test.csv'),header=True, index=False)
+
 
 if __name__ == '__main__':
   os.chdir(path_git)
   print(os.path.join('file_dataset', filename+'.csv'))
   #if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
-  create_csv_file(os.path.join('file_dataset', filename+'.csv'))
-  create_train_test()
-  save_frames_train()
-  etichetta_immagine()
+  #create_csv_file(os.path.join('file_dataset', filename+'.csv'))
+  #create_train_test()
+  save_frames_train_test()
+  #etichetta_immagine()
    
   
   
