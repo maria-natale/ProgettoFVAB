@@ -73,7 +73,7 @@ def create_train_test():
 
 #salva i frame per i video di training nella cartella train
 def save_frames_train_test():
-  """os.chdir(os.path.join(path_git, 'file_dataset'))
+  os.chdir(os.path.join(path_git, 'file_dataset'))
   train = pd.read_csv(filename+'_train.csv')
   os.chdir(os.path.join(path_drive, dataset_dir))
   if not os.path.isdir('train'):
@@ -87,12 +87,12 @@ def save_frames_train_test():
       while(cap.isOpened()):
         frameId = cap.get(1) #prende il frame corrente
         ret, frame = cap.read()
-        if (ret != True):
+        if (ret != True or count == 350):
           break
         file_tosave ='train/' + video_name+"_frame%d.jpg" % count            
         count += 1 
         cv2.imwrite(file_tosave, frame)
-      cap.release()"""
+      cap.release()
 
   os.chdir(os.path.join(path_git, 'file_dataset'))
   test = pd.read_csv(filename+'_test.csv')
@@ -108,7 +108,7 @@ def save_frames_train_test():
       while(cap.isOpened()):
         frameId = cap.get(1) #prende il frame corrente
         ret, frame = cap.read()
-        if (ret != True):
+        if (ret != True or count == 350):
           break
         file_tosave ='test/' + video_name+"_frame%d.jpg" % count            
         count += 1 
