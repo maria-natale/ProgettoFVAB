@@ -4,6 +4,7 @@ import numpy as np
 import glob
 import dlib
 import csv
+from google.colab.patches import cv2_imshow
 import math
 import time
 import shutil
@@ -29,15 +30,15 @@ def shape_to_np(shape, dtype="int"):
 # Definisce un dizionario che mappa gli indici per i
 # landmark facciali per ogni regione del viso
 FACIAL_LANDMARKS_IDXS = OrderedDict([
-	("mouth", (48, 68)),
+	  ("mouth", (48, 68)),
     ("mouth_intern", (60, 68)),
     ("mouth_extern", (48, 60)),
-	("right_eyebrow", (17, 22)),
-	("left_eyebrow", (22, 27)),
-	("right_eye", (36, 42)),
-	("left_eye", (42, 48)),
-	("nose", (27, 35)),
-	("jaw", (0, 17))
+	  ("right_eyebrow", (17, 22)),
+	  ("left_eyebrow", (22, 27)),
+	  ("right_eye", (36, 42)),
+	  ("left_eye", (42, 48)),
+	  ("nose", (27, 35)),
+	  ("jaw", (0, 17))
 ])
 
 SIZE = (300, 200)
@@ -45,7 +46,7 @@ SIZE = (300, 200)
 detector = dlib.get_frontal_face_detector()  #inizializza il face detector(HOG-based) della libreria dlib
 predictor = dlib.shape_predictor("/content/drive/MyDrive/shape_predictor_68_face_landmarks.dat") 
 
-path = "/content/drive/MyDrive/Under 30"    #Path della cartella contenente i video da 15 secondi da computare
+path = "/content/drive/MyDrive/Casillo&Natale/roba gaetano/train"    #Path della cartella contenente i video da 15 secondi da computare
 destinationPath = "/content/drive/MyDrive/Casillo&Natale/roba gaetano/test"  #Path della cartella di destinazione per i video csv
 video_destination_path = "/content/drive/MyDrive/Casillo&Natale/dataset_4_7/butta"  #path della cartella di destinazione per i video con presenti solo le labbra
 video_destination_path_land = "/content/drive/MyDrive/Casillo&Natale/dataset_4_7/butta"
@@ -55,58 +56,62 @@ os.chdir(destinationPath)
 
 
 for videoFile in tqdm(os.listdir(path)):     #per ogni file video nella cartella
-    print("-----------Inizio computazione " + videoFile + "----------------")
-    cap= cv2.VideoCapture(path + "/" + videoFile)       #apre il video
-    distanceMatrixExt = []          #Conterrà N array ognuno contenente le distanze euclidee per ogni singolo frame
-    video_array = []                #Conterrà i singoli frame delle labbra che verranno usati per formare il video
-    video_array_landmark = []       #Conterrà i singoli frame delle labbra con i landmark stampati a video usati per formare il video
-    while(cap.isOpened()):          #Fin quando il video non sarà concluso
-        ret, frame = cap.read()     #Salva ogni frame in image 
+  
 
+
+  for videoFile in os.listdir(path):     #per ogni file video nella cartella
+    print("-----------Inizio computazione " + videoFile + "----------------")
+    cap = cv2.VideoCapture(path + "/" + videoFile)
+    ds_factor = 0.5
+    i=0
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        i=i+1
         if ret == False:
             break
-            
-        #image = cv2.resize(image, dsize=(640, 360), interpolation=cv2.INTER_CUBIC)
+        rects = detector(frame, 1)
+        for rect in rects: 
+          shape = predictor(frame, rect)    #Determina i landmark del viso
+          shape = shape_to_np(shape)   
+          frame = cv2.resize(frame, None, fx=ds_factor, fy=ds_factor, interpolation=cv2.INTER_AREA)
+        
 
-            
-        rects = detector(frame, 1)      #Estrae i rettangoli contenenti visi
-            
+          (x, y, w, h) = cv2.boundingRect(np.array([shape[FACIAL_LANDMARKS_IDXS["mouth"][0]:FACIAL_LANDMARKS_IDXS["mouth"][1]]]))
+          y = int(y - 0.15*h)
+          cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0), 3)
 
-        for rect in rects:      #Per ogni rettangolo contenente un viso
-            
-            shape = predictor(frame, rect)    #Determina i landmark del viso
-            shape = shape_to_np(shape)        #Converte i landmark in coordinate (x, y) in un array NumPy  
-            
-            i = 1
-            distanceMatrix = []     #Arrau delle distanze euclidee per i singoli frame
-            #print("Stampo robe: " + str(FACIAL_LANDMARKS_IDXS["mouth"][0]) + " " + str(FACIAL_LANDMARKS_IDXS["mouth"][1]))
-            (x, y, w, h) = cv2.boundingRect(np.array([shape[FACIAL_LANDMARKS_IDXS["mouth"][0]:FACIAL_LANDMARKS_IDXS["mouth"][1]]])) #Estrae i punti per il rettangolo contenente le labbra
-            #print("X = " + str(x) + " Y = " + str(y))
-            #print("Larghezza = " + str(w) + "  Altezza = " + str(h))
-            y = int(y - 0.15 * h)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-            track_window = (x, y, w, h)
-            roi = frame[y:y + h, x:x + w]
-            gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-            ret2, mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-            res = cv2.bitwise_and(roi, roi, mask=mask)
-            hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-            roi_hist = cv2.calcHist([hsv_roi], [0, 1], mask, [180, 255], [0, 180, 0, 255])
-            cv2.normalize(roi_hist, roi_hist, 0, 255, cv2.NORM_MINMAX)
-            term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1)
-
-            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            dst = cv2.calcBackProject([hsv], [0, 1], roi_hist, [0, 180, 0, 255], 1)
+          track_window = (x, y, w, h)
+          roi = frame[y:y + h, x:x + w]
+          gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+          ret2, mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+          res = cv2.bitwise_and(roi, roi, mask=mask)
+          hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+          roi_hist = cv2.calcHist([hsv_roi], [0, 1], mask, [180, 255], [0, 180, 0, 255])
+          cv2.normalize(roi_hist, roi_hist, 0, 255, cv2.NORM_MINMAX)
+          term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1)
+          hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+          dst = cv2.calcBackProject([hsv], [0, 1], roi_hist, [0, 180, 0, 255], 1)
             # apply meanshift to get the new location
-            ret, track_window = cv2.meanShift(dst, track_window, term_crit)
+          ret, track_window = cv2.meanShift(dst, track_window, term_crit)
             # Draw it on image
-            x, y, w, h = track_window
-            img2 = cv2.rectangle(frame, (x, y), (x + w, y + h), 0, 1)
-            lip = frame[y:y + h, x:x + w]
+          x, y, w, h = track_window
+          img2 = cv2.rectangle(frame, (x, y), (x + w, y + h), 0, 1)
+          lip = frame[y:y + h, x:x + w]
+          video = cv2.resize(lip, (64,64), interpolation=cv2.INTER_CUBIC)
+          cv2.imwrite(videoFile + "_frame%d.jpg" %i , gray )
+          break
+        break
 
-            video = cv2.resize(lip, (64, 64), interpolation=cv2.INTER_CUBIC)
-            file_tosave ='/content/drive/MyDrive/Casillo&Natale/roba gaetano/test' + videoFile+"_frame.jpg"
-            cv2.imwrite(file_tosave, video)
+          
+
+  
+
+        
+
+    #print("-----------Conclusa computazione " + videoFile + "----------------")
+            #video = cv2.resize(lip, (64, 64), interpolation=cv2.INTER_CUBIC)
+            #file_tosave ='/content/drive/MyDrive/Casillo&Natale/roba gaetano/test' + videoFile+"_frame.jpg"
+            #cv2.imwrite(file_tosave, video)
             
 
 
