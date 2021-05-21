@@ -78,29 +78,30 @@ for videoFile in tqdm(os.listdir(path)):     #per ogni file video nella cartella
 
           (x, y, w, h) = cv2.boundingRect(np.array([shape[FACIAL_LANDMARKS_IDXS["mouth"][0]:FACIAL_LANDMARKS_IDXS["mouth"][1]]]))
           y = int(y - 0.15*h)
-          cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0),3)
+          cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0),0)
 
           track_window = (x, y, w, h)
           roi = frame[y:y + h, x:x + w]
-          gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-          ret2, mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-          res = cv2.bitwise_and(roi, roi, mask=mask)
-          hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-          roi_hist = cv2.calcHist([hsv_roi], [0, 1], mask, [180, 255], [0, 180, 0, 255])
-          cv2.normalize(roi_hist, roi_hist, 0, 255, cv2.NORM_MINMAX)
-          term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1)
-          hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-          dst = cv2.calcBackProject([hsv], [0, 1], roi_hist, [0, 180, 0, 255], 1)
+         # gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+         # ret2, mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+         # res = cv2.bitwise_and(roi, roi, mask=mask)
+         # hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+         # roi_hist = cv2.calcHist([hsv_roi], [0, 1], mask, [180, 255], [0, 180, 0, 255])
+         # cv2.normalize(roi_hist, roi_hist, 0, 255, cv2.NORM_MINMAX)
+         # term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1)
+         # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+         # dst = cv2.calcBackProject([hsv], [0, 1], roi_hist, [0, 180, 0, 255], 1)
             # apply meanshift to get the new location
-          ret, track_window = cv2.meanShift(dst, track_window, term_crit)
+          #ret, track_window = cv2.meanShift(dst, track_window, term_crit)
             # Draw it on image
-          x, y, w, h = track_window
-          img2 = cv2.rectangle(frame, (x, y), (x + w, y + h), 0, 1)
+          #x, y, w, h = track_window
+          #img2 = cv2.rectangle(frame, (x, y), (x + w, y + h), 0, 1)
           lip = frame[y:y + h, x:x + w]
-          video = cv2.resize(lip, (64,64), interpolation=cv2.INTER_CUBIC)
+          video = cv2.resize(lip, (120,120), interpolation=cv2.INTER_AREA)
           cv2.imwrite(videoFile + "_frame%d.jpg" %i , roi )
           
         
+  
 
           
 
