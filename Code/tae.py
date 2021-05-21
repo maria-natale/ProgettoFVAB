@@ -73,7 +73,7 @@ for videoFile in tqdm(os.listdir(path)):     #per ogni file video nella cartella
         for rect in rects: 
           shape = predictor(frame, rect)    #Determina i landmark del viso
           shape = shape_to_np(shape)   
-          frame = cv2.resize(frame, None, fx=ds_factor, fy=ds_factor, interpolation=cv2.INTER_AREA)
+          #frame = cv2.resize(frame, None, fx=ds_factor, fy=ds_factor, interpolation=cv2.INTER_AREA)
         
 
           (x, y, w, h) = cv2.boundingRect(np.array([shape[FACIAL_LANDMARKS_IDXS["mouth"][0]:FACIAL_LANDMARKS_IDXS["mouth"][1]]]))
@@ -98,7 +98,7 @@ for videoFile in tqdm(os.listdir(path)):     #per ogni file video nella cartella
           img2 = cv2.rectangle(frame, (x, y), (x + w, y + h), 0, 1)
           lip = frame[y:y + h, x:x + w]
           video = cv2.resize(lip, (64,64), interpolation=cv2.INTER_CUBIC)
-          cv2.imwrite(videoFile + "_frame%d.jpg" %i , gray )
+          cv2.imwrite(videoFile + "_frame%d.jpg" %i , roi )
           break
         break
 
