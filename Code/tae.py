@@ -46,7 +46,7 @@ SIZE = (300, 200)
 detector = dlib.get_frontal_face_detector()  #inizializza il face detector(HOG-based) della libreria dlib
 predictor = dlib.shape_predictor("/content/drive/MyDrive/shape_predictor_68_face_landmarks.dat") 
 
-path = "/content/drive/MyDrive/Casillo&Natale/roba gaetano/train"    #Path della cartella contenente i video da 15 secondi da computare
+path = "/content/drive/MyDrive/Under 30"    #Path della cartella contenente i video da 15 secondi da computare
 destinationPath = "/content/drive/MyDrive/Casillo&Natale/roba gaetano/test"  #Path della cartella di destinazione per i video csv
 video_destination_path = "/content/drive/MyDrive/Casillo&Natale/dataset_4_7/butta"  #path della cartella di destinazione per i video con presenti solo le labbra
 video_destination_path_land = "/content/drive/MyDrive/Casillo&Natale/dataset_4_7/butta"
@@ -78,7 +78,7 @@ for videoFile in tqdm(os.listdir(path)):     #per ogni file video nella cartella
 
           (x, y, w, h) = cv2.boundingRect(np.array([shape[FACIAL_LANDMARKS_IDXS["mouth"][0]:FACIAL_LANDMARKS_IDXS["mouth"][1]]]))
           y = int(y - 0.15*h)
-          cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0), 3)
+          cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0),3)
 
           track_window = (x, y, w, h)
           roi = frame[y:y + h, x:x + w]
@@ -99,8 +99,8 @@ for videoFile in tqdm(os.listdir(path)):     #per ogni file video nella cartella
           lip = frame[y:y + h, x:x + w]
           video = cv2.resize(lip, (64,64), interpolation=cv2.INTER_CUBIC)
           cv2.imwrite(videoFile + "_frame%d.jpg" %i , roi )
-          break
-        break
+          
+        
 
           
 
