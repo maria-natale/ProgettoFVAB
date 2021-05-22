@@ -16,7 +16,9 @@ dataset_dir = 'dataset_4_7/datasetCSV'
 LANGUAGES = {4:'Spagnolo',
   7: 'Giapponese'}
 
-#crea due file, uno con tutti i nomi dei csv di train e le etichette dei csv di test
+"""Eseguire la prima e la quarta funzione per creare il dataset csv"""
+
+#crea due file, uno con tutti i nomi dei csv di train e uno con quelli di test
 #copia i file csv in due cartelle separate train e test e normalizza tutto a 350 righe
 def create_folders():
   os.chdir(os.path.join(path_git, 'file_dataset'))
@@ -28,7 +30,7 @@ def create_folders():
     train_label = pd.DataFrame(columns = ['video_name', 'language'])
     test = pd.DataFrame(columns = ['video_name', 'language'])
     for filecsv in tqdm(glob.glob("*.csv")):
-      name_to_search = filecsv.split('.')[0]+ '.avi'
+      name_to_search = filecsv.split('.')[0]+".avi"
       df = pd.read_csv(filecsv)
       df = df.iloc[:350, :]
       df = df.transpose()
@@ -50,31 +52,52 @@ def create_folders():
 
 #unisce tutti i file csv in due file train e test
 def file_union():
+  os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
+  df_train_names = pd.read_csv(filename_dr+'_train_csv.csv')
+  #riordino casualmente le righe del dataframe
+  df_train_names = df_train_names.sample(frac=1).reset_index(drop=True) 
+  print(df_train_names)
   os.chdir(os.path.join(path_drive, dataset_dir, 'train_csv'))
+  train_targets = pd.DataFrame(columns = ['language'])
   columns_66 = [str(i) for i in range(350)]
   df_train = pd.DataFrame(columns = columns_66)
-  for fl in tqdm(glob.glob("*.csv")):
-    df = pd.read_csv(fl)
+  for i, row in tqdm(df_train_names.iterrows()):
+    fl = row['video_name']
+    #print(fl)
     try:
+      df = pd.read_csv(fl)
       df = df.set_axis(columns_66, axis = 1)
       df_train = df_train.append(df)
+      train_targets.loc[-1] = [fl.split('_')[0]]
+      train_targets.index += 1
     except:
       print("passato")
   print(df_train.shape)
 
+  os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
+  df_test_names = pd.read_csv(filename_dr+'_test_csv.csv')
+  #riordino casualmente le righe del dataframe
+  df_test_names = df_test_names.sample(frac=1).reset_index(drop=True) 
+
   os.chdir(os.path.join(path_drive, dataset_dir, 'test_csv'))
+  test_targets = pd.DataFrame(columns = ['language'])
   df_test = pd.DataFrame(columns = columns_66)
-  for fl in tqdm(glob.glob("*.csv")):
-    df = pd.read_csv(fl)
+  for i, row in tqdm(df_test_names.iterrows()):
+    fl = row['video_name']
     try:
+      df = pd.read_csv(fl)
       df = df.set_axis(columns_66, axis = 1)
       df_test = df_test.append(df)
+      test_targets.loc[-1] = [fl.split('_')[0]]
+      test_targets.index += 1
     except:
       print("passato")
   print(df_test.shape)
   os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
   df_train.to_csv(filename_dr+"_all_train.csv", index = False)
   df_test.to_csv(filename_dr+"_all_test.csv", index = False)
+  train_targets.to_csv(filename_dr+"_targets_train.csv", index = False)
+  test_targets.to_csv(filename_dr+"_targets_test.csv", index = False)
 
 #per ogni riga dei file di train e di test crea un'etichetta target in due file 
 def create_targets_file():
@@ -106,12 +129,71 @@ def create_targets_file():
   test_targets.to_csv(filename_dr+"targets_all_test.csv", index = False)
       
 
+def union_sepate_features():
+  os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
+  df_train_names = pd.read_csv(filename_dr+'_train_csv.csv')
+  #riordino casualmente le righe del dataframe
+  df_train_names = df_train_names.sample(frac=1).reset_index(drop=True) 
+  os.chdir(os.path.join(path_drive, dataset_dir, 'train_csv'))
+  train_targets = pd.DataFrame(columns = ['language'])
+  columns_66 = [str(i) for i in range(350)]
 
+  df_features = []
+  for i in range (0, 66):
+    df_features.append(pd.DataFrame(columns = columns_66))
+  
+  for i, row in tqdm(df_train_names.iterrows()):
+    fl = row['video_name']
+    print(str(i)+" "+fl)
+    #print(fl)
+    df = pd.read_csv(fl)
+    df = df.set_axis(columns_66, axis = 1)
+    for i, row in df.iterrows():
+      j = i%66
+      #df_features[j] = pd.concat([df_features[j], row])
+      df_features[j].loc[-1] = row
+      df_features[j].index+=1
+        #df_features[j].index+= 1
+    train_targets.loc[-1] = [fl.split('_')[0]]
+    train_targets.index+=1
+  
+  os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
+  df_test_names = pd.read_csv(filename_dr+'_test_csv.csv')
+  #riordino casualmente le righe del dataframe
+  df_test_names = df_test_names.sample(frac=1).reset_index(drop=True) 
+  os.chdir(os.path.join(path_drive, dataset_dir, 'test_csv'))
+  test_targets = pd.DataFrame(columns = ['language'])
+  columns_66 = [str(i) for i in range(350)]
+
+  df_features_t= []
+  for i in range (0, 66):
+    df_features_t.append(pd.DataFrame(columns = columns_66))
+  
+  for i, row in tqdm(df_test_names.iterrows()):
+    fl = row['video_name']
+    print(str(i)+" "+ fl)
+    df = pd.read_csv(fl)
+    df = df.set_axis(columns_66, axis = 1)
+    for i, row in df.iterrows():
+      j = i%66
+      df_features_t[j].loc[-1] =row
+      df_features_t[j].index+=1
+    test_targets.loc[-1] = [fl.split('_')[0]]
+    test_targets.index+=1
+
+  os.chdir(os.path.join(path_drive, dataset_dir, 'csv', 'features'))
+  for i in range (0,66):
+    df_features[i].to_csv('feature'+str(i)+'.csv', index= False)
+    df_features_t[i].to_csv('feature_t'+str(i)+'.csv',  index= False)
+  os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
+  train_targets.to_csv(filename_dr+'_train_targets_1.csv',  index= False)
+  test_targets.to_csv(filename_dr+'_test_targets_1.csv',  index= False)
 
 if __name__ == '__main__':
-  #create_folders()
-  file_union()
+  create_folders()
+  #file_union()
   #create_targets_file()
+  union_sepate_features()
 
 
 
