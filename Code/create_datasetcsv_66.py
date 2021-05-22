@@ -17,7 +17,7 @@ LANGUAGES = {4:'Spagnolo',
   7: 'Giapponese'}
 
 #crea due file, uno con tutti i nomi dei csv di train e le etichette dei csv di test
-#copia i file csv in due cartelle separate train e test e normalizza tutto a 360 righe
+#copia i file csv in due cartelle separate train e test e normalizza tutto a 350 righe
 def create_folders():
   os.chdir(os.path.join(path_git, 'file_dataset'))
   train = pd.read_csv(filename_git+'_train.csv')
@@ -26,22 +26,21 @@ def create_folders():
     os.makedirs('train_csv')
     os.makedirs('test_csv')
     train_label = pd.DataFrame(columns = ['video_name', 'language'])
-    test = pd.DataFrame(columns = ['video_name'])
+    test = pd.DataFrame(columns = ['video_name', 'language'])
     for filecsv in tqdm(glob.glob("*.csv")):
       name_to_search = filecsv.split('.')[0]+ '.avi'
       df = pd.read_csv(filecsv)
-      df = df.iloc[:360, :]
+      df = df.iloc[:350, :]
+      df = df.transpose()
       if any(train.video_name == name_to_search):
         df.to_csv('train_csv/'+filecsv, index = False)
         train_label.loc[-1] = [filecsv, filecsv.split('_')[0]]
         train_label.index += 1
       else:
         df.to_csv('test_csv/'+filecsv, index = False)
-        test.loc[-1] = [filecsv]
+        test.loc[-1] = [filecsv, filecsv.split('_')[0]]
         test.index += 1
 
-
-    train_label['language'] = train_label['language'].map(LANGUAGES)
     os.chdir(os.path.join(path_drive, dataset_dir, 'csv'))
     train_label.sort_values(by = ['video_name'], ascending = True)
     train_label.to_csv(filename_dr+'_train_csv.csv', index = False)
@@ -52,7 +51,7 @@ def create_folders():
 #unisce tutti i file csv in due file train e test
 def file_union():
   os.chdir(os.path.join(path_drive, dataset_dir, 'train_csv'))
-  columns_66 = [str(i) for i in range(66)]
+  columns_66 = [str(i) for i in range(350)]
   df_train = pd.DataFrame(columns = columns_66)
   for fl in tqdm(glob.glob("*.csv")):
     df = pd.read_csv(fl)
@@ -110,8 +109,8 @@ def create_targets_file():
 
 
 if __name__ == '__main__':
-  create_folders()
-  #file_union()
+  #create_folders()
+  file_union()
   #create_targets_file()
 
 
