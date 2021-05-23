@@ -9,11 +9,17 @@ import cv2
 import math 
 
 path_git = '/content/ProgettoFVAB'
-filename = 'spagnolo_giapponese'
+filename = 'all'
 path_drive = '/content/drive/MyDrive/Casillo&Natale'
-dataset_dir = 'dataset_Spagnolo_giapponese'
+dataset_dir = 'dataset_all'
 
-LANGUAGES = {4:'Spagnolo',
+LANGUAGES = {
+  1:'Italiano',
+  2:'Inglese',
+  3: 'Tedesco',
+  4:'Spagnolo',
+  5: 'Olandese',
+  6:'Russo',
   7: 'Giapponese'}
 
 
@@ -45,8 +51,11 @@ def create_train_test():
   df = pd.read_csv(filename+'.csv')
   split = StratifiedShuffleSplit(n_splits = 1, test_size = 0.2, random_state = 42) 
   labelencoder = LabelEncoder()
+  
+  
   df['lan_gen_age'] = labelencoder.fit_transform(df['lan_gen_age'])
-  for train_index, test_index in split.split(df, df['lan_gen_age']):
+  #per stratificazione equilibrata usare lan_gen_age. I video del russo sono sbilanciati quindi usare solo language
+  for train_index, test_index in split.split(df, df['language']):
     strat_train_set = df.loc[train_index]
     strat_test_set = df.loc[test_index]
   strat_train_set_all = pd.DataFrame(columns = ['video_name', 'language'])
@@ -155,9 +164,9 @@ if __name__ == '__main__':
   print(os.path.join('file_dataset', filename+'.csv'))
   #if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
   #create_csv_file(os.path.join('file_dataset', filename+'.csv'))
-  #create_train_test()
-  save_frames_train_test()
-  etichetta_immagine()
+  create_train_test()
+  #save_frames_train_test()
+  #etichetta_immagine()
    
   
   
