@@ -90,8 +90,39 @@ def save_frames_train_test():
             
             video = cv2.resize(frame, (112,112), interpolation=cv2.INTER_AREA)
             cv2.imwrite("/content/drive/MyDrive/Casillo&Natale/roba gaetano/train/" + video_name + "_frame%d.jpg" %count , video )
-                 
-    
+
+
+def save_frames_test_test():
+  train = pd.read_csv("/content/ProgettoFVAB/file_dataset/spagnolo_giapponese_test.csv")
+  os.chdir(os.path.join(path_drive, dataset_dir))
+  etichettaN=[]
+  etichettaC=[]
+  for i in tqdm(range(train.shape[0])):
+          video_name = train['video_name'][i]
+          #check=video_name[:len(video_name)-8]
+          #if check not in etichettaN:
+          etichettaN.append(video_name)
+          etichettaC.append(video_name.split('_')[0])
+          
+          
+          count = 0
+          cap = cv2.VideoCapture(video_name) 
+          frameRate=cap.get(5)
+          while(cap.isOpened()):
+            frameId = cap.get(1)
+            ret, frame = cap.read()
+            if (ret != True or count == 350):
+              break
+            frame=cv2.GaussianBlur(frame, (5, 5), 0)
+          #cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0),0)
+            count=count+1
+            
+            video = cv2.resize(frame, (112,112), interpolation=cv2.INTER_AREA)
+            cv2.imwrite("/content/drive/MyDrive/Casillo&Natale/roba gaetano/test/" + video_name + "_frame%d.jpg" %count , video )
+  train_data = pd.DataFrame()
+  train_data['video'] = etichettaN
+  train_data['language'] = etichettaC
+  train_data.to_csv("/content/drive/MyDrive/Casillo&Natale/roba gaetano/ImmaginiClasseVIDEO_test.csv",header=True, index=False)
       
       
       #video_name = train['video_name'][i]
@@ -151,7 +182,8 @@ if __name__ == '__main__':
   #if not os.path.exists(os.path.join('file_dataset', filename+'.csv')):
   #create_csv_file(os.path.join('file_dataset', filename+'.csv'))
   #create_train_test()
-  save_frames_train_test()
+  #save_frames_train_test()
+  save_frames_test_test()
   #etichetta_immagine()
    
   
