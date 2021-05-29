@@ -22,7 +22,18 @@ dataset_dir = 'dataset_4_7'
   4:'Spagnolo',
   5: 'Olandese',
   6:'Russo',
-  7: 'Giapponese'}"""
+  7: 'Giapponese'}
+LANGUAGES_N = {
+    1:0,
+    2:1,
+    3:2,
+    4:3,
+    5:4,
+    6:5,
+    7:6
+}
+"""
+
 LANGUAGES = {
   4:'Spagnolo',
   7:'Giapponese'
