@@ -32,7 +32,7 @@ LANGUAGES_N = {
   7:1
 }
 
-#crea un file csv contenente i nomi di tutti i video (escludendo le ripetizioni per i video da cui sono state estratte piÃ¹ sequenze)
+#crea un file csv contenente i nomi di tutti i video (escludendo le ripetizioni per i video da cui sono state estratte più sequenze)
 def create_csv_file(path):
   os.chdir(path)
   columns = ['video_name', 'language', 'gender', 'over30', 'lan_gen_age']
@@ -48,7 +48,7 @@ def create_csv_file(path):
   df.to_csv(os.path.join(path, 'file_dataset', filename+'.csv'), index = False)
 
 
-#crea tre file csv, train, test e validation
+#crea tre file csv per group (train, validation, test)
 def split_data(path):
   os.chdir(os.path.join(path, 'file_dataset'))
   df = pd.read_csv(filename+'.csv')
@@ -98,6 +98,7 @@ def split_data(path):
   strat_test_set_all.to_csv(filename+'_test.csv',index = False)
 
 
+#copia i video nella cartella group suddividendoli in aottocartelle in base alla lingua
 def copy_video(path, group):
   os.chdir(os.path.join(path, 'file_dataset'))
   train = pd.read_csv(filename+'_'+group+'.csv')
@@ -110,12 +111,67 @@ def copy_video(path, group):
       video_name = train['video_name'][i]
       lan = video_name.split('_')[0]
       shutil.copy(video_name, group+'/'+str(LANGUAGES_N[int(lan)])+'/'+video_name)
+
+
+#crea due file contenente nomi dei csv di group con le rispettive etichette
+#normalizza ciascun file a 350 righe
+def split_csvfiles(path, folder, group):
+  os.chdir(os.path.join(path, 'file_dataset'))
+  train = pd.read_csv(filename+'_'+group+'.csv')
+  train_label = pd.DataFrame(columns = ['video_name', 'language'])
+  os.chdir(os.path.join(path, folder))
+  if not os.path.isdir(group):
+    os.makedirs(group)
+    for filecsv in tqdm(glob("*.csv")):
+      name_to_search = filecsv.split('.')[0]+".avi"
+      df = pd.read_csv(filecsv)
+      df = df.iloc[:350, :]
+      df = df.transpose()
+      if any(train.video_name == name_to_search):
+        df.to_csv(group+'/'+filecsv, index = False)
+        train_label.loc[-1] = [filecsv, filecsv.split('_')[0]]
+        train_label.index += 1
+
+    os.chdir(os.path.join(path, folder, 'csv'))
+    train_label.to_csv(filename+'_'+group+'_csv.csv', index = False)
+
+
+#crea un file per ognuna delle features. La riga i-esima di ogni file corrisponderà ai valori della colonna relativa a quella feature nel file i
+def union_features(path, folder, group):
+  os.chdir(os.path.join(path, folder, 'csv'))
+  df_train_names = pd.read_csv(filename+'_'+group+'_csv.csv')
+  os.chdir(os.path.join(path, folder, group))
+  train_targets = pd.DataFrame(columns = ['language'])
+  columns_350 = [str(i) for i in range(350)]
+  df_features = []
+  for i in range (0, 66):
+    df_features.append(pd.DataFrame(columns = columns_350))
+  
+  for i, row in tqdm(df_train_names.iterrows()):
+    fl = row['video_name']
+    df = pd.read_csv(fl)
+    df = df.set_axis(columns_350, axis = 1)
+    for i, row in df.iterrows():
+      j = i%66
+      df_features[j].loc[-1] = row
+      df_features[j].index+=1
+    train_targets.loc[-1] = [fl.split('_')[0]]
+    train_targets.index+=1
+  
+  os.chdir(os.path.join(path, folder, 'features'))
+  os.makedirs(group)
+  for i in range (0,66):
+    df_features[i].to_csv(group+'/feature'+str(i)+'.csv', index= False)
+  os.chdir(os.path.join(path, folder, 'csv'))
+  train_targets.to_csv(filename+'_'+group+'_targets_1.csv',  index= False)
   
 
 if __name__ == '__main__':
   path = os.path.join(path_drive, dataset_dir)
-  #create_csv_file(path)
-  #split_data(path)
-  #copy_video(path, 'train')
-  copy_video(path, 'validation')
-  copy_video(path, 'test')
+  create_csv_file(path)
+  split_data(path)
+  for group in ['train', 'validation', 'test']:
+    copy_video(path, group)
+    split_csvfiles(path, 'datasetCSV', group)
+    union_features(path, 'datasetCSV', group)
+ 
